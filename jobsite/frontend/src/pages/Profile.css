@@ -1,0 +1,223 @@
+/* Profile.css — Airbnb-style design: clean, airy, soft shadows, rounded corners */
+
+.profile-page {
+  background-color: #f7f7f7;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.profile-container {
+  max-width: 900px;
+  margin: 40px auto 0;
+}
+
+.profile-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  margin-bottom: 40px;
+}
+
+/* Profile Header — Avatar + Name + Stats */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #222;
+  margin: 0 0 8px;
+}
+
+.profile-location {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0 0 12px;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 20px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+/* Section Styling */
+.profile-section {
+  margin-bottom: 40px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+}
+
+.edit-button {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #007a87;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.edit-button:hover {
+  background: #f0f9f9;
+}
+
+/* Form Styling for Edit Mode */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bio-input {
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.bio-input:focus {
+  outline: none;
+  border-color: #007a87;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.input-field {
+  flex: 1;
+  padding: 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #007a87;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.save-button,
+.cancel-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.save-button {
+  background-color: #007a87;
+  color: white;
+}
+
+.save-button:hover {
+  background-color: #005f6b;
+}
+
+.cancel-button {
+  background-color: #f0f0f0;
+  color: #555;
+}
+
+.cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Profile Bio Display */
+.profile-bio {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #333;
+  margin: 0;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 12px;
+  border-left: 4px solid #007a87;
+}
+
+/* Placeholder for future sections */
+.coming-soon {
+  font-style: italic;
+  color: #888;
+  padding: 20px;
+  background: #fcfcfc;
+  border-radius: 12px;
+  border: 1px dashed #ddd;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .profile-stats {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .profile-card {
+    padding: 24px;
+  }
+
+  .profile-name {
+    font-size: 1.8rem;
+  }
+}
