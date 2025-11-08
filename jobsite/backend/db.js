@@ -1,13 +1,9 @@
-// db.js
 import pkg from 'pg';
 const { Pool } = pkg;
 
 const pool = new Pool({
-    user: "postgres",
-    host: "localhost",
-    database: "sideline_au_db",
-    password: "123kurt",
-    port: 5432,
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false } 
 });
 
 export default pool;
