@@ -158,7 +158,7 @@ const FindWork = () => {
               <div
                 key={job.id}
                 className="job-card"
-                onClick={() => (window.location.href = `/job/${job.id}`)}
+                onClick={() => job?.id ? navigate(`/job/${job.id}`) : console.error("Job ID missing")}
                 style={{ cursor: 'pointer' }}
               >
                 <div className="job-content">
