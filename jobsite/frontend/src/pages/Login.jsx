@@ -2,17 +2,13 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Phone } from 'lucide-react';
 import Navbar from '../components/Navbar';
-// ❌ Removed real API import: // import { login } from '../api/auth';
 import './Login.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const LogInPage = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,40 +19,34 @@ const LogInPage = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  try {
-    const response = await fetch(`${API_URL}/api/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password
-      }),
-    });
+    try {
+      const response = await fetch(`${API_URL}/api/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || "Login failed");
+      if (!response.ok) throw new Error(data.error || "Login failed");
+
+      localStorage.setItem('user', JSON.stringify(data.user));
+      alert("✅ Login successful!");
+      window.location.href = "/find-work";
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err.message || "Failed to login. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    // Save user info to localStorage
-    localStorage.setItem('user', JSON.stringify(data.user));
-
-    alert("✅ Login successful!");
-    window.location.href = "/find-work"; // redirect after login
-
-  } catch (err) {
-    console.error("Login error:", err);
-    setError(err.message || "Failed to login. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <div className="login-page">
@@ -95,11 +85,7 @@ const LogInPage = () => {
               <p className="login-subtitle">Welcome back! Please enter your details.</p>
             </div>
 
-            {error && (
-              <div className="alert alert-error">
-                {error}
-              </div>
-            )}
+            {error && <div className="alert alert-error">{error}</div>}
 
             <form onSubmit={handleSubmit} className="login-form">
               <div className="form-group">

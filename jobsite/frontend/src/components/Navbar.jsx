@@ -14,7 +14,7 @@ const Navbar = () => {
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
-      } catch (e) {
+      } catch {
         console.warn("Failed to parse user from localStorage");
       }
     }
@@ -30,11 +30,9 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
-  const handleSearch = async (e) => {
+  const handleSearch = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-
-    // Redirect to Explore page with search param
     navigate(`/explore?search=${encodeURIComponent(searchQuery)}`);
     setSearchQuery("");
   };
@@ -49,7 +47,7 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Nav Links */}
+        {/* Desktop Nav Links */}
         <nav className="nav-links">
           <NavLink to="/explore" className="nav-link">
             Explore
@@ -62,7 +60,7 @@ const Navbar = () => {
           </NavLink>
         </nav>
 
-        {/* Search */}
+        {/* Search (hidden on mobile) */}
         <form className="search-container" onSubmit={handleSearch}>
           <input
             type="text"
@@ -73,30 +71,76 @@ const Navbar = () => {
           />
         </form>
 
-        {/* Auth Buttons */}
+        {/* Right Section */}
         <div className="header-right">
           <button className="icon-btn">
             <Globe size={20} />
           </button>
+
           {user ? (
-            <Link to="/profile" className="icon-btn">
-              <User size={20} />
-            </Link>
+            <>
+              <Link to="/profile" className="icon-btn">
+                <User size={20} />
+              </Link>
+              <button className="btn-secondary" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
           ) : (
             <>
-              <Link to="/login" className="btn-secondary">
+              <Link to="/login" className="btn-secondary desktop-only">
                 Log in
               </Link>
-              <Link to="/signup" className="btn-primary">
+              <Link to="/signup" className="btn-primary desktop-only">
                 Sign up
               </Link>
             </>
           )}
+
+          {/* Mobile Menu Toggle */}
           <button className="icon-btn menu-toggle" onClick={toggleMenu}>
             {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
+
+      {/* Mobile Dropdown Menu */}
+      {isMenuOpen && (
+        <div className="mobile-menu">
+          <nav className="mobile-nav-links">
+            <NavLink to="/explore" onClick={toggleMenu} className="mobile-link">
+              Explore
+            </NavLink>
+            <NavLink to="/find-work" onClick={toggleMenu} className="mobile-link">
+              Find Work
+            </NavLink>
+            <NavLink to="/about" onClick={toggleMenu} className="mobile-link">
+              About
+            </NavLink>
+          </nav>
+
+          {/* Mobile Auth Section */}
+          {user ? (
+            <>
+              <Link to="/profile" className="mobile-btn" onClick={toggleMenu}>
+                Profile
+              </Link>
+              <button className="mobile-btn logout" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="mobile-btn" onClick={toggleMenu}>
+                Log in
+              </Link>
+              <Link to="/signup" className="mobile-btn primary" onClick={toggleMenu}>
+                Sign up
+              </Link>
+            </>
+          )}
+        </div>
+      )}
     </header>
   );
 };
