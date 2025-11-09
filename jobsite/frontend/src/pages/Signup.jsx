@@ -49,7 +49,7 @@ const SignUpPage = () => {
     }
 
     alert("✅ Account created successfully!");
-    window.location.href = "/login";
+    window.location.href = "/Login";
 
   } catch (err) {
     console.error("Signup error:", err);
