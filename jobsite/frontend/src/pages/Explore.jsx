@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Heart, Star, Clock, MapPin, DollarSign, CheckCircle } from 'lucide-react';
 import './Explore.css';
+import { useNavigate } from "react-router-dom";
+
 
 const Explore = () => {
   const [favorites, setFavorites] = useState(new Set());
@@ -12,6 +14,7 @@ const Explore = () => {
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false); // ✅ for confirmation message
   const location = useLocation();
+  const navigate = useNavigate(); // ✅ MUST be inside component
 
   const query = new URLSearchParams(location.search).get('search');
   const API_URL = import.meta.env.VITE_API_URL;
@@ -78,7 +81,8 @@ const Explore = () => {
                   <div
                     className="job-card"
                     key={job.id}
-                    onClick={() => (window.location.href = `/job/${job.id}`)}
+                    onClick={() => job?.id ? navigate(`/job/${job.id}`) : console.error("Job ID missing")}
+
                     style={{ cursor: 'pointer' }}
                   >
                     {/* Remove image container */}
