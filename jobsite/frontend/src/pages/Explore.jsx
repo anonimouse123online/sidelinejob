@@ -13,49 +13,41 @@ const Explore = () => {
   const [loaded, setLoaded] = useState(false); // ✅ for confirmation message
   const location = useLocation();
 
-  // 🧠 Get search query from URL (?search=developer)
   const query = new URLSearchParams(location.search).get('search');
   const API_URL = import.meta.env.VITE_API_URL;
 
-
-  // 💾 Fetch jobs when query changes
   useEffect(() => {
     const fetchJobs = async () => {
-  setLoading(true);
-  setLoaded(false);
-  try {
-    const endpoint = query
-      ? `${API_URL}/api/jobs/search?q=${encodeURIComponent(query)}`
-      : `${API_URL}/api/jobs`;
+      setLoading(true);
+      setLoaded(false);
+      try {
+        const endpoint = query
+          ? `${API_URL}/api/jobs/search?q=${encodeURIComponent(query)}`
+          : `${API_URL}/api/jobs`;
 
-    const res = await fetch(endpoint);
+        const res = await fetch(endpoint);
 
-    if (!res.ok) {
-      throw new Error(`Server returned ${res.status} ${res.statusText}`);
-    }
+        if (!res.ok) throw new Error(`Server returned ${res.status} ${res.statusText}`);
 
-    const data = await res.json();
+        const data = await res.json();
 
-    if (!Array.isArray(data)) {
-      throw new Error('API did not return an array');
-    }
+        if (!Array.isArray(data)) throw new Error('API did not return an array');
 
-    setJobs(data);
-    setLoaded(true);
-  } catch (error) {
-    console.error('❌ FetchJobs failed:', error);
-    setJobs([]); // ✅ safe fallback
-    // Optionally: setError(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+        setJobs(data);
+        setLoaded(true);
+      } catch (error) {
+        console.error('❌ FetchJobs failed:', error);
+        setJobs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchJobs();
   }, [query]);
 
   const toggleFavorite = (id, e) => {
-    e.stopPropagation(); // ✅ prevent click from opening job details
+    e.stopPropagation();
     const newFavorites = new Set(favorites);
     if (newFavorites.has(id)) newFavorites.delete(id);
     else newFavorites.add(id);
@@ -70,13 +62,9 @@ const Explore = () => {
         <section className="section">
           <div className="section-header">
             <h2 className="section-title">
-              {query
-                ? `Search results for "${query}"`
-                : 'Popular sideline jobs'}
+              {query ? `Search results for "${query}"` : 'Popular sideline jobs'}
             </h2>
-            <a href="#" className="section-link">
-              Show all
-            </a>
+            <a href="#" className="section-link">Show all</a>
           </div>
 
           {loading ? (
@@ -93,27 +81,7 @@ const Explore = () => {
                     onClick={() => (window.location.href = `/job/${job.id}`)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <div className="job-image-container">
-                      <img
-                        src={job.image_url || 'https://via.placeholder.com/400x224'}
-                        alt={job.title}
-                        className="job-image"
-                      />
-                      <button
-                        className="favorite-btn"
-                        onClick={(e) => toggleFavorite(job.id, e)}
-                      >
-                        <Heart
-                          size={16}
-                          className={`favorite-icon ${
-                            favorites.has(job.id) ? 'active' : 'inactive'
-                          }`}
-                        />
-                      </button>
-                      {job.is_featured && (
-                        <span className="featured-badge">Featured</span>
-                      )}
-                    </div>
+                    {/* Remove image container */}
 
                     <div className="job-content">
                       <div className="job-header">
@@ -122,6 +90,17 @@ const Explore = () => {
                           <Star size={16} className="star-icon" />
                           <span className="rating-text">4.8</span>
                         </div>
+                        <button
+                          className="favorite-btn"
+                          onClick={(e) => toggleFavorite(job.id, e)}
+                        >
+                          <Heart
+                            size={16}
+                            className={`favorite-icon ${
+                              favorites.has(job.id) ? 'active' : 'inactive'
+                            }`}
+                          />
+                        </button>
                       </div>
 
                       <p className="job-company">{job.company || 'Unknown Company'}</p>
@@ -147,16 +126,13 @@ const Explore = () => {
                         </div>
                       </div>
 
-                      {/* Job Skills / Tags */}
                       {job.skills && job.skills.length > 0 && (
                         <div className="job-tags">
-                          {Array.isArray(job.skills)
-                            ? job.skills.map((skill, index) => (
-                                <span key={index} className="job-tag">
-                                  {skill}
-                                </span>
-                              ))
-                            : null}
+                          {Array.isArray(job.skills) &&
+                            job.skills.map((skill, index) => (
+                              <span key={index} className="job-tag">{skill}</span>
+                            ))
+                          }
                         </div>
                       )}
                     </div>
@@ -164,7 +140,6 @@ const Explore = () => {
                 ))}
               </div>
 
-              {/* ✅ Final confirmation snippet */}
               {loaded && (
                 <div className="confirmation-message">
                   <CheckCircle size={20} className="confirm-icon" />

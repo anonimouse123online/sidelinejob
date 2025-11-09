@@ -1,6 +1,6 @@
 // src/pages/JobDetails.jsx
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // ✅ add useNavigate
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { MapPin, Clock, DollarSign, Star } from "lucide-react";
@@ -10,7 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const JobDetails = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); // ✅ initialize navigate
+  const navigate = useNavigate();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -38,11 +38,8 @@ const JobDetails = () => {
       <Navbar />
       <main className="job-details-page">
         <div className="job-details-container">
-          <img
-            src={job.image_url || "https://via.placeholder.com/600x300"}
-            alt={job.title}
-            className="job-banner"
-          />
+          {/* Image removed */}
+
           <h1>{job.title}</h1>
           <p className="company">{job.company || "Unknown Company"}</p>
 
@@ -67,7 +64,6 @@ const JobDetails = () => {
             </>
           )}
 
-          {/* ✅ Apply Now Button */}
           <button
             className="apply-btn"
             onClick={() => navigate("/you-applied", { state: { job } })}
