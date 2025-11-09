@@ -1,11 +1,15 @@
 // src/pages/PostJob.jsx
 import React, { useState } from 'react';
-import { MapPin, Clock, DollarSign, Briefcase, Mail, Calendar, Plus, HelpCircle } from 'lucide-react';
+import { 
+  MapPin, Clock, DollarSign, Briefcase, 
+  Mail, Calendar, Plus, HelpCircle 
+} from 'lucide-react';
 import Navbar from '../components/Navbar';
 import './PostJob.css';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = import.meta.env.VITE_API_URL;
+// ✅ Fixed: Use backticks + fallback + trim
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').trim();
 
 const PostJob = () => {
   const navigate = useNavigate();
@@ -31,8 +35,8 @@ const PostJob = () => {
 
   const [newSkill, setNewSkill] = useState('');
   const [newQuestion, setNewQuestion] = useState('');
+  const [error, setError] = useState(null);
 
-  // Handlers
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -75,49 +79,56 @@ const PostJob = () => {
     }));
   };
 
-  // ✅ REAL API SUBMISSION — replaces the demo version
- // ✅ REAL API SUBMISSION — replaces the demo version
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  // ✅ FIXED: Correct template literal + robust error handling
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
 
-  if (!formData.termsAccepted) {
-    alert('Please accept the Terms of Service.');
-    return;
-  }
-
-  // Prepare payload
-  const payload = {
-    ...formData,
-    minBudget: formData.minBudget ? Number(formData.minBudget) : undefined,
-    maxBudget: formData.maxBudget ? Number(formData.maxBudget) : undefined,
-  };
-
-  console.log('📤 Sending job data to /api/jobs:', payload);
-
-  try {
-    const response = await fetch('${API_URL}/api/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to post job');
+    if (!formData.termsAccepted) {
+      alert('Please accept the Terms of Service.');
+      return;
     }
 
-    const data = await response.json();
-    console.log('✅ Job posted successfully:', data);
-    alert('Job posted successfully!');
-    navigate('/find-work');
-  } catch (error) {
-    console.error('❌ Job posting error:', error);
-    alert(`Failed to post job: ${error.message}`);
-  }
-};
+    const payload = {
+      ...formData,
+      minBudget: formData.minBudget ? Number(formData.minBudget) : undefined,
+      maxBudget: formData.maxBudget ? Number(formData.maxBudget) : undefined,
+    };
 
+    console.log('📤 Posting to:', `${API_URL}/api/jobs`);
+    console.log('📋 Payload:', payload);
+
+    try {
+      const response = await fetch(`${API_URL}/api/jobs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      // 🔒 Guard 1: Check content-type before parsing
+      const contentType = response.headers.get('content-type');
+      if (!contentType?.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`Expected JSON, got HTML: ${text.substring(0, 200)}...`);
+      }
+
+      // 🔒 Guard 2: Handle HTTP errors
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Job posted successfully:', data);
+      alert('🎉 Job posted successfully!');
+      navigate('/find-work');
+    } catch (err) {
+      console.error('❌ Job posting failed:', err);
+      setError(err.message || 'An unknown error occurred. Please try again.');
+    }
+  };
 
   // Options
   const categories = [
@@ -147,6 +158,12 @@ const handleSubmit = async (e) => {
           <h1>Post a Job</h1>
           <p>Fill out the details below to attract the perfect candidate for your sideline job.</p>
         </div>
+
+        {error && (
+          <div className="error-banner">
+            <span style={{ color: 'red' }}>⚠️ {error}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="postjob-form">
           {/* === Section 1: Job Basics === */}
@@ -380,7 +397,7 @@ const handleSubmit = async (e) => {
             <h2>Contact & Screening</h2>
 
             <div className="form-group">
-              <label htmlFor="contactEmail">Contact Email *</label>
+              <label htmlFor="contact_email">Contact Email *</label>
               <div className="input-with-icon">
                 <Mail className="input-icon" />
                 <input

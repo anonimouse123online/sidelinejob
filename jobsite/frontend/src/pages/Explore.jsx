@@ -21,23 +21,35 @@ const Explore = () => {
   // 💾 Fetch jobs when query changes
   useEffect(() => {
     const fetchJobs = async () => {
-      setLoading(true);
-      setLoaded(false);
-      try {
-        const endpoint = query
-          ? `${API_URL}/api/jobs/search?q=${encodeURIComponent(query)}`
-          : `${API_URL}/api/jobs`;
+  setLoading(true);
+  setLoaded(false);
+  try {
+    const endpoint = query
+      ? `${API_URL}/api/jobs/search?q=${encodeURIComponent(query)}`
+      : `${API_URL}/api/jobs`;
 
-        const res = await fetch(endpoint);
-        const data = await res.json();
-        setJobs(data);
-        setLoaded(true);
-      } catch (error) {
-        console.error('❌ Failed to fetch jobs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const res = await fetch(endpoint);
+
+    if (!res.ok) {
+      throw new Error(`Server returned ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error('API did not return an array');
+    }
+
+    setJobs(data);
+    setLoaded(true);
+  } catch (error) {
+    console.error('❌ FetchJobs failed:', error);
+    setJobs([]); // ✅ safe fallback
+    // Optionally: setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchJobs();
   }, [query]);
