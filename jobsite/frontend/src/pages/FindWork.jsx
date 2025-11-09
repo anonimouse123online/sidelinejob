@@ -5,6 +5,8 @@ import { MapPin, Clock, DollarSign, Briefcase, Star } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import './FindWork.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const FindWork = () => {
   const navigate = useNavigate();
 
@@ -15,11 +17,12 @@ const FindWork = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch jobs from backend
+  
+
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/jobs');
+        const res = await fetch('${API_URL}/api/jobs');
         if (!res.ok) throw new Error('Failed to fetch jobs');
         const data = await res.json();
         setJobs(data);

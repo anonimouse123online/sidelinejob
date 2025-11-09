@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import "./Profile.css";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Profile = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +21,7 @@ const Profile = () => {
         const storedUser = JSON.parse(localStorage.getItem("user"));
         if (!storedUser || !storedUser.email) throw new Error("Please log in first.");
 
-        const res = await fetch(`http://localhost:5000/api/profile?email=${storedUser.email}`);
+        const res = await fetch(`${API_URL}/api/profile?email=${storedUser.email}`);
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.error || "Failed to fetch profile");
@@ -63,7 +65,7 @@ const Profile = () => {
 
     try {
       setUploading(true);
-      const res = await fetch("http://localhost:5000/api/profile/pic", {
+      const res = await fetch("${API_URL}/api/profile/pic", {
         method: "POST",
         body: formData,
       });
@@ -133,7 +135,7 @@ const Profile = () => {
             <img
               src={
                 userProfile.profilePic
-                  ? `http://localhost:5000${userProfile.profilePic}`
+                  ? `${API_URL}${userProfile.profilePic}`
                   : "https://via.placeholder.com/150"
               }
               alt="User avatar"

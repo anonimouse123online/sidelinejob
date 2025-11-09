@@ -15,6 +15,8 @@ const Explore = () => {
 
   // 🧠 Get search query from URL (?search=developer)
   const query = new URLSearchParams(location.search).get('search');
+  const API_URL = import.meta.env.VITE_API_URL;
+
 
   // 💾 Fetch jobs when query changes
   useEffect(() => {
@@ -23,8 +25,8 @@ const Explore = () => {
       setLoaded(false);
       try {
         const endpoint = query
-          ? `http://localhost:5000/api/jobs/search?q=${encodeURIComponent(query)}`
-          : `http://localhost:5000/api/jobs`;
+          ? `${API_URL}/api/jobs/search?q=${encodeURIComponent(query)}`
+          : `${API_URL}/api/jobs`;
 
         const res = await fetch(endpoint);
         const data = await res.json();

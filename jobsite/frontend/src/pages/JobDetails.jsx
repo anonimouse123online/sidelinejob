@@ -6,6 +6,8 @@ import Footer from "../components/Footer";
 import { MapPin, Clock, DollarSign, Star } from "lucide-react";
 import "./JobDetails.css";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const JobDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate(); // ✅ initialize navigate
@@ -16,7 +18,7 @@ const JobDetails = () => {
     const fetchJob = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/jobs/${id}`);
+        const res = await fetch(`${API_URL}/api/jobs/${id}`);
         const data = await res.json();
         setJob(data);
       } catch (error) {
