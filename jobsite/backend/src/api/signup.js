@@ -3,7 +3,7 @@ export async function signup(email, password, fullName, phone = "") {
   const [firstName, ...rest] = fullName.split(" ");
   const lastName = rest.join(" ");
 
-  const response = await fetch("${API_URL}/api/signup", {
+  const response = await fetch(`${API_URL}/api/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
