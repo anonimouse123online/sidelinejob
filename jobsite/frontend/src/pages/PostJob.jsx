@@ -1,5 +1,5 @@
 // src/pages/PostJob.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MapPin, Clock, DollarSign, Briefcase, 
   Mail, Calendar, Plus, HelpCircle 
@@ -13,7 +13,7 @@ const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').trim()
 
 const PostJob = () => {
   const navigate = useNavigate();
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -36,6 +36,19 @@ const PostJob = () => {
   const [newSkill, setNewSkill] = useState('');
   const [newQuestion, setNewQuestion] = useState('');
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Check authentication when component mounts
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (!token || !user) {
+      setError('Please log in to post a job.');
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -79,13 +92,23 @@ const PostJob = () => {
     }));
   };
 
-  // ✅ FIXED: Correct template literal + robust error handling
+  // ✅ UPDATED: Correct template literal + robust error handling + AUTHENTICATION
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
 
     if (!formData.termsAccepted) {
       alert('Please accept the Terms of Service.');
+      setLoading(false);
+      return;
+    }
+
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Please log in to post a job.');
+      setLoading(false);
       return;
     }
 
@@ -97,12 +120,14 @@ const PostJob = () => {
 
     console.log('📤 Posting to:', `${API_URL}/api/jobs`);
     console.log('📋 Payload:', payload);
+    console.log('🔐 Token exists:', !!token);
 
     try {
       const response = await fetch(`${API_URL}/api/jobs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // ✅ ADD AUTHENTICATION HEADER
         },
         body: JSON.stringify(payload),
       });
@@ -117,6 +142,17 @@ const PostJob = () => {
       // 🔒 Guard 2: Handle HTTP errors
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        
+        // Handle specific error cases
+        if (response.status === 401) {
+          localStorage.removeItem('token'); // Clear invalid token
+          localStorage.removeItem('user');
+          setIsAuthenticated(false);
+          throw new Error('Session expired. Please log in again.');
+        } else if (response.status === 403) {
+          throw new Error('Invalid or expired token. Please log in again.');
+        }
+        
         throw new Error(errorData.error || `HTTP ${response.status} ${response.statusText}`);
       }
 
@@ -127,8 +163,40 @@ const PostJob = () => {
     } catch (err) {
       console.error('❌ Job posting failed:', err);
       setError(err.message || 'An unknown error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Show loading or redirect message if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="postjob-container">
+        <Navbar />
+        <div className="postjob-form-wrapper">
+          <div className="auth-required-message">
+            <h2>🔒 Authentication Required</h2>
+            <p>Please log in to post a job.</p>
+            {error && <p className="error-text">{error}</p>}
+            <div className="auth-buttons">
+              <button 
+                className="btn-primary" 
+                onClick={() => navigate('/login')}
+              >
+                Go to Login
+              </button>
+              <button 
+                className="btn-secondary" 
+                onClick={() => navigate('/signup')}
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Options
   const categories = [
@@ -182,6 +250,7 @@ const PostJob = () => {
                   onChange={handleChange}
                   placeholder="e.g., Virtual Assistant for Social Media"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -196,6 +265,7 @@ const PostJob = () => {
                 placeholder="Describe the role, responsibilities, and expectations..."
                 rows="5"
                 required
+                disabled={loading}
               />
               <p className="helper-text">Include scope, deliverables, and key requirements.</p>
             </div>
@@ -208,6 +278,7 @@ const PostJob = () => {
                 value={formData.category}
                 onChange={handleChange}
                 required
+                disabled={loading}
               >
                 <option value="">Select a category</option>
                 {categories.map(cat => (
@@ -225,14 +296,15 @@ const PostJob = () => {
                   onChange={(e) => setNewSkill(e.target.value)}
                   placeholder="Type a skill and press Enter"
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())}
+                  disabled={loading}
                 />
-                <button type="button" onClick={handleAddSkill}>Add</button>
+                <button type="button" onClick={handleAddSkill} disabled={loading}>Add</button>
               </div>
               <div className="tags">
                 {formData.skills.map((skill, i) => (
                   <span key={i} className="tag">
                     {skill}
-                    <button type="button" onClick={() => handleRemoveSkill(skill)}>×</button>
+                    <button type="button" onClick={() => handleRemoveSkill(skill)} disabled={loading}>×</button>
                   </span>
                 ))}
               </div>
@@ -258,6 +330,7 @@ const PostJob = () => {
                       value={option.value}
                       checked={formData.jobType === option.value}
                       onChange={handleChange}
+                      disabled={loading}
                     />
                     <MapPin className="radio-icon" />
                     {option.label}
@@ -279,6 +352,7 @@ const PostJob = () => {
                     onChange={handleChange}
                     placeholder="City, State, Country"
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -292,6 +366,7 @@ const PostJob = () => {
                 value={formData.duration}
                 onChange={handleChange}
                 required
+                disabled={loading}
               >
                 <option value="">Select duration</option>
                 {durations.map(dur => (
@@ -310,6 +385,7 @@ const PostJob = () => {
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleChange}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -334,6 +410,7 @@ const PostJob = () => {
                       value={option.value}
                       checked={formData.paymentType === option.value}
                       onChange={handleChange}
+                      disabled={loading}
                     />
                     <DollarSign className="radio-icon" />
                     {option.label}
@@ -359,6 +436,7 @@ const PostJob = () => {
                         placeholder="Min"
                         min="0"
                         required
+                        disabled={loading}
                       />
                       <span>to</span>
                       <input
@@ -369,6 +447,7 @@ const PostJob = () => {
                         placeholder="Max"
                         min="0"
                         required
+                        disabled={loading}
                       />
                     </div>
                   </div>
@@ -382,6 +461,7 @@ const PostJob = () => {
                     value={formData.currency}
                     onChange={handleChange}
                     required
+                    disabled={loading}
                   >
                     {currencies.map(curr => (
                       <option key={curr} value={curr}>{curr}</option>
@@ -408,6 +488,7 @@ const PostJob = () => {
                   onChange={handleChange}
                   placeholder="candidates@yourcompany.com"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -422,6 +503,7 @@ const PostJob = () => {
                   name="deadline"
                   value={formData.deadline}
                   onChange={handleChange}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -434,8 +516,9 @@ const PostJob = () => {
                   value={newQuestion}
                   onChange={(e) => setNewQuestion(e.target.value)}
                   placeholder="e.g., What is your experience with Figma?"
+                  disabled={loading}
                 />
-                <button type="button" onClick={handleAddQuestion}>
+                <button type="button" onClick={handleAddQuestion} disabled={loading}>
                   <Plus size={16} /> Add
                 </button>
               </div>
@@ -443,7 +526,7 @@ const PostJob = () => {
                 {formData.screeningQuestions.map((q, i) => (
                   <div key={i} className="question-item">
                     <span>{q}</span>
-                    <button type="button" onClick={() => handleRemoveQuestion(i)}>Remove</button>
+                    <button type="button" onClick={() => handleRemoveQuestion(i)} disabled={loading}>Remove</button>
                   </div>
                 ))}
               </div>
@@ -459,16 +542,17 @@ const PostJob = () => {
                 checked={formData.termsAccepted}
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
               I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
             </label>
 
             <div className="form-buttons">
-              <button type="button" className="btn-secondary">
+              <button type="button" className="btn-secondary" disabled={loading}>
                 Save Draft
               </button>
-              <button type="submit" className="btn-primary">
-                Post Job
+              <button type="submit" className="btn-primary" disabled={loading}>
+                {loading ? 'Posting Job...' : 'Post Job'}
               </button>
             </div>
           </div>

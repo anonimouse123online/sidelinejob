@@ -12,34 +12,93 @@ const JobDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [applying, setApplying] = useState(false);
 
   useEffect(() => {
     const fetchJob = async () => {
       setLoading(true);
+      setError(null);
+
       try {
         const res = await fetch(`${API_URL}/api/jobs/${id}`);
+        if (!res.ok) {
+          setError(res.status === 404 ? "Job not found." : "Failed to fetch job.");
+          return;
+        }
         const data = await res.json();
         setJob(data);
-      } catch (error) {
-        console.error("Failed to load job:", error);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load job. Please check your connection.");
       } finally {
         setLoading(false);
       }
     };
+
     fetchJob();
   }, [id]);
 
-  if (loading) return <p>Loading job...</p>;
-  if (!job) return <p>Job not found.</p>;
+  const handleApply = async () => {
+  if (!job) return;
+
+  const userId = Number(localStorage.getItem("id")); // must match users.id in DB
+  if (!userId) {
+    alert("❌ You must be logged in to apply.");
+    return;
+  }
+
+  setApplying(true);
+  try {
+    const payload = {
+      job_id: job.id,
+      user_id: userId,
+      experience: null,
+      location: null,
+      cover_letter: null,
+      resume_url: null,
+      skills: [],
+      position: "Applicant", // <--- Added position
+    };
+
+    console.log("APPLY PAYLOAD:", payload);
+
+    const res = await fetch(`${API_URL}/api/applicants`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Failed to apply for this job.");
+      return;
+    }
+
+    // Redirect to YouApplied page with job info
+    navigate("/you-applied", { state: { job } });
+  } catch (err) {
+    console.error("Application error:", err);
+    alert("Failed to submit application.");
+  } finally {
+    setApplying(false);
+  }
+};
+
+
+  if (loading) return <p className="loading-text">Loading job...</p>;
+  if (error) return <p className="error-text">{error}</p>;
 
   return (
     <>
       <Navbar />
       <main className="job-details-page">
         <div className="job-details-container">
-          {/* Image removed */}
-
           <h1>{job.title}</h1>
           <p className="company">{job.company || "Unknown Company"}</p>
 
@@ -53,22 +112,21 @@ const JobDetails = () => {
           <h3>Description</h3>
           <p>{job.description || "No description available."}</p>
 
-          {job.skills && job.skills.length > 0 && (
+          {job.skills?.length > 0 && (
             <>
               <h3>Skills</h3>
               <ul>
-                {job.skills.map((s, i) => (
-                  <li key={i}>{s}</li>
-                ))}
+                {job.skills.map((skill, i) => <li key={i}>{skill}</li>)}
               </ul>
             </>
           )}
 
           <button
             className="apply-btn"
-            onClick={() => navigate("/you-applied", { state: { job } })}
+            onClick={handleApply}
+            disabled={applying}
           >
-            Apply Now
+            {applying ? "Applying..." : "Apply Now"}
           </button>
         </div>
       </main>

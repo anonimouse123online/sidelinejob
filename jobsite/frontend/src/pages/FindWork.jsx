@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Clock, DollarSign, Briefcase, Star, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Loading from '../function/loading'; // Import your loading component
 import './FindWork.css';
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').trim();
@@ -16,6 +17,7 @@ const FindWork = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [navigatingToJob, setNavigatingToJob] = useState(false);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -55,6 +57,17 @@ const FindWork = () => {
     fetchJobs();
   }, []);
 
+  const handleJobClick = (jobId) => {
+    if (!jobId) {
+      console.error("Job ID missing");
+      return;
+    }
+
+    // Show loading and navigate immediately
+    setNavigatingToJob(true);
+    navigate(`/job/${jobId}`);
+  };
+
   const filteredJobs = jobs.filter((job) => {
     const title = (job.title || '').toLowerCase();
     const company = (job.company || '').toLowerCase();
@@ -74,6 +87,16 @@ const FindWork = () => {
 
     return matchesSearch && matchesLocation && matchesCategory;
   });
+
+  // Show only your imported loading component when navigating to job
+  if (navigatingToJob) {
+    return <Loading />;
+  }
+
+  // Show your imported loading component during initial load
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="findwork-container">
@@ -109,11 +132,9 @@ const FindWork = () => {
       <div className="results-section">
         <div className="results-header">
           <h2 className="results-title">
-            {loading
-              ? 'Loading jobs...'
-              : error
-                ? 'Error loading jobs'
-                : `${filteredJobs.length} job${filteredJobs.length !== 1 ? 's' : ''} found`}
+            {error
+              ? 'Error loading jobs'
+              : `${filteredJobs.length} job${filteredJobs.length !== 1 ? 's' : ''} found`}
           </h2>
           {!error && (
             <div className="results-subtitle">
@@ -126,21 +147,6 @@ const FindWork = () => {
           <div className="error-banner">
             <AlertCircle size={20} />
             <span>{error}</span>
-          </div>
-        )}
-
-        {loading && (
-          <div className="loading-placeholder">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="job-card loading">
-                <div className="job-content">
-                  <div className="skeleton avatar" />
-                  <div className="skeleton title" />
-                  <div className="skeleton company" />
-                  <div className="skeleton meta" />
-                </div>
-              </div>
-            ))}
           </div>
         )}
 
@@ -158,7 +164,7 @@ const FindWork = () => {
               <div
                 key={job.id}
                 className="job-card"
-                onClick={() => job?.id ? navigate(`/job/${job.id}`) : console.error("Job ID missing")}
+                onClick={() => handleJobClick(job.id)}
                 style={{ cursor: 'pointer' }}
               >
                 <div className="job-content">
@@ -236,7 +242,7 @@ const FindWork = () => {
                               className="apply-btn"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                alert(`Application sent for “${job.title}”`);
+                                alert(`Application sent for "${job.title}"`);
                               }}
                             >
                               Apply Now

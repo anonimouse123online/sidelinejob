@@ -4,9 +4,9 @@ import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Heart, Star, Clock, MapPin, DollarSign, CheckCircle } from 'lucide-react';
+import Loading from '../function/loading'; // Import your loading component
 import './Explore.css';
 import { useNavigate } from "react-router-dom";
-
 
 const Explore = () => {
   const [favorites, setFavorites] = useState(new Set());
@@ -57,6 +57,11 @@ const Explore = () => {
     setFavorites(newFavorites);
   };
 
+  // Show loading component during initial load
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
     <>
       <Navbar />
@@ -70,9 +75,7 @@ const Explore = () => {
             <a href="#" className="section-link">Show all</a>
           </div>
 
-          {loading ? (
-            <p>Loading jobs...</p>
-          ) : jobs.length === 0 ? (
+          {jobs.length === 0 ? (
             <p>No jobs found.</p>
           ) : (
             <>
@@ -82,7 +85,6 @@ const Explore = () => {
                     className="job-card"
                     key={job.id}
                     onClick={() => job?.id ? navigate(`/job/${job.id}`) : console.error("Job ID missing")}
-
                     style={{ cursor: 'pointer' }}
                   >
                     {/* Remove image container */}
